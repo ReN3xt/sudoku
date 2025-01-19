@@ -1,65 +1,61 @@
 class Sudoku {
     constructor(size = 4) {
         this.sudokuSize = size;
-        this.boxLength = Math.sqrt(size);
-        this.values = Sudoku.generateBoard(size);
-        this.fillBox();
-        this.refreshBoard();
+        this.boxSize = Math.sqrt(size);
+        this.values = Sudoku.generateEmptyBoard(size);
+        this.generateSolution();
+        this.updateUI();
     }
 
-    static generateBoard(size = 4, value = null) {
-        return Array.from({ length: size }, () => Array(size).fill(value));
+    static generateEmptyBoard(size = 4) {
+        return Array.from({ length: size }, () => Array(size).fill(null));
     }
 
-    fillBox(row = 0, col = 0) {
-        if(row === this.sudokuSize){
-            return true;
-        }
+    generateSolution(row = 0, col = 0) {
+        if (row === this.sudokuSize) return true;
 
-        let nextCol = (col + 1) % this.sudokuSize;
-        let nextRow = (col + 1) >= this.sudokuSize ? row + 1 : row;
-        let value = Math.floor(Math.random() * this.sudokuSize);
+        const nextCol = (col + 1) % this.sudokuSize;
+        const nextRow = (col + 1) >= this.sudokuSize ? row + 1 : row;
 
-        for(let i = 0; i < this.sudokuSize; i++){
-            this.values[row][col] = (value + i) % this.sudokuSize;
-            if(this.deepVerification() && this.fillBox(nextRow, nextCol)){
-                return true;
-            }
+        const startValue = Math.floor(Math.random() * this.sudokuSize);
+
+        for(let offset = 0; offset < this.sudokuSize; offset++){
+            this.values[row][col] = (startValue + offset) % this.sudokuSize;
+
+            if (this.fullValidation() && this.generateSolution(nextRow, nextCol)) return true;
         }
 
         this.values[row][col] = null;
         return false;
     }
 
-    refreshBoard() {
+    updateUI() {
         for (let cell of cells) {
             cell.style.backgroundColor = color[this.values[cell.id[0]][cell.id[1]]];
         }
     }
 
-    verifySudoku() {
-        return this.shortVerification() && this.deepVerification();
+    isValid() {
+        return this.basicValidation() && this.fullValidation();
     }
     
-    shortVerification() {
-        return this.nullVerification() && this.duplicatesVerification();
+    basicValidation() {
+        return this.checkForNulls() && this.validateValueCounts();
     }
 
-    deepVerification() {
-        return this.rowsVerification() && this.columnsVerification() && this.boxVerification();
+    fullValidation() {
+        return this.validateRows() && this.validateColumns() && this.validateBoxes();
     }
 
-    nullVerification() {
+    checkForNulls() {
         for (let row  of this.values) {
-            if (row.includes(null)) {
-                return false;
-            }
+            if (row.includes(null)) return false;
         }
 
         return true;
     }
 
-    duplicatesVerification() {
+    validateValueCounts() {
         let totalValues = Array(this.sudokuSize).fill(0);
 
         for (let row of this.values) {
@@ -69,15 +65,13 @@ class Sudoku {
         }
 
         for (let value of totalValues) {
-            if (value !== 4) {
-                return false;
-            }
+            if (value !== 4) return false;
         }
 
         return true;
     }
 
-    rowsVerification() {
+    validateRows() {
         for (let row of this.values) {
             let totalValues = Array(this.sudokuSize).fill(0);
 
@@ -86,16 +80,14 @@ class Sudoku {
             }
 
             for (let value of totalValues) {
-                if (value > 1) {
-                    return false;
-                }
+                if (value > 1) return false;
             }
         }
 
         return true;
     }
 
-    columnsVerification() {
+    validateColumns() {
         let totalValues = Array.from({ length: this.sudokuSize }, () => Array(this.sudokuSize).fill(0));
 
         for (let row of this.values) {
@@ -109,23 +101,21 @@ class Sudoku {
 
         for (let column of totalValues) {
             for (let value of column) {
-                if (value > 1) {
-                    return false;
-                }
+                if (value > 1) return false;
             }
         }
 
         return true;
     }
 
-    boxVerification() {
+    validateBoxes() {
         let totalValues = Array.from({ length: this.sudokuSize }, () => Array(this.sudokuSize).fill(0));
         let index = 0;
 
         for (let row of this.values) {
             for (let value of row) {
-                const boxIndex = Math.floor((index / this.boxLength)) % this.boxLength;
-                const boxOffset = Math.floor(index / (this.sudokuSize * this.boxLength)) * this.boxLength;
+                const boxIndex = Math.floor((index / this.boxSize)) % this.boxSize;
+                const boxOffset = Math.floor(index / (this.sudokuSize * this.boxSize)) * this.boxSize;
                 totalValues[boxIndex + boxOffset][value]++;
                 index++;
             }
@@ -133,9 +123,7 @@ class Sudoku {
 
         for (let column of totalValues) {
             for (let value of column) {
-                if (value > 1) {
-                    return false;
-                }
+                if (value > 1) return false;
             }
         }
 
@@ -147,22 +135,21 @@ class Sudoku {
 document.addEventListener('contextmenu', event => event.preventDefault());
 
 document.addEventListener('click', function (e) {
-    if(e.target.classList.contains("box") && !e.target.classList.contains("start")){
-        let box = e.target;
-        game.values[box.id[0]][box.id[1]] = (game.values[box.id[0]][box.id[1]] + 1) % 4;
-        box.style.backgroundColor = color[game.values[box.id[0]][box.id[1]]];
-        console.log(game.columnsVerification(true));
+    if(e.target.classList.contains("cell") && !e.target.classList.contains("start")){
+        let cell = e.target;
+        sudoku.values[cell.id[0]][cell.id[1]] = (sudoku.values[cell.id[0]][cell.id[1]] + 1) % 4;
+        cell.style.backgroundColor = color[sudoku.values[cell.id[0]][cell.id[1]]];
     }
 });
 
 document.addEventListener('contextmenu', function (e) {
-    if(e.target.classList.contains("box") && !e.target.classList.contains("start")){
-        let box = e.target;
-        game.values[box.id[0]][box.id[1]] = null;
-        box.style.backgroundColor = "";
+    if(e.target.classList.contains("cell") && !e.target.classList.contains("start")){
+        let cell = e.target;
+        sudoku.values[cell.id[0]][cell.id[1]] = null;
+        cell.style.backgroundColor = "";
     }
 });
 
 const color = ["#d63031", "#fdcb6e", "#00b894", "#0984e3"];
-let cells = document.getElementsByClassName('box');
-const game = new Sudoku();
+let cells = document.getElementsByClassName('cell');
+const sudoku = new Sudoku();
