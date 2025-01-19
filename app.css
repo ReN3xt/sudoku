@@ -44,3 +44,7 @@ h1 {
     border-radius:10px;
     transition: background-color 0.6s ease;
 }
+
+.container .sub-container .start {
+    border: 0.3em white solid;
+}
