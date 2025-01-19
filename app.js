@@ -76,11 +76,7 @@ class Sudoku {
             let totalValues = Array(this.sudokuSize).fill(0);
 
             for (let value of row) {
-                totalValues[value]++;
-            }
-
-            for (let value of totalValues) {
-                if (value > 1) return false;
+                if (++totalValues[value] > 1) return false;
             }
         }
 
@@ -94,14 +90,9 @@ class Sudoku {
             let columnIndex = 0;
 
             for (let value of row) {
-                totalValues[columnIndex][value]++;
+                if (++totalValues[columnIndex][value] > 1) return false;
+                
                 columnIndex++;
-            }
-        }
-
-        for (let column of totalValues) {
-            for (let value of column) {
-                if (value > 1) return false;
             }
         }
 
@@ -116,14 +107,10 @@ class Sudoku {
             for (let value of row) {
                 const boxIndex = Math.floor((index / this.boxSize)) % this.boxSize;
                 const boxOffset = Math.floor(index / (this.sudokuSize * this.boxSize)) * this.boxSize;
-                totalValues[boxIndex + boxOffset][value]++;
-                index++;
-            }
-        }
 
-        for (let column of totalValues) {
-            for (let value of column) {
-                if (value > 1) return false;
+                if(++totalValues[boxIndex + boxOffset][value] > 1) return false;
+
+                index++;
             }
         }
 
