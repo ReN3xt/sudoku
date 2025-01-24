@@ -30,7 +30,9 @@ class Sudoku {
     }
 
     generateInitialBoard() {
-        for (let i = 0; i < 12; i++) {
+        const cellsToRemove = Math.floor((this.sudokuSize ** 2) * 0.75);
+
+        for (let i = 0; i < cellsToRemove; i++) {
             const row = Math.floor(Math.random() * this.sudokuSize);
             const col = Math.floor(Math.random() * this.sudokuSize);
             
@@ -69,7 +71,7 @@ class Sudoku {
         }
 
         for (let value of totalValues) {
-            if (value !== 4) return false;
+            if (value !== this.sudokuSize) return false;
         }
 
         return true;

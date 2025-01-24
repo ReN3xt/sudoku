@@ -1,7 +1,6 @@
 document.addEventListener('contextmenu', event => event.preventDefault());
 
 document.addEventListener('click', function (e) {
-    console.log(e.target.id);
     if(e.target.classList.contains("cell") && !e.target.classList.contains("init") && isGameStarted){
         let cell = e.target;
 
